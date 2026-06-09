@@ -9,10 +9,12 @@ A minimal Express.js server that provides audio transcription and format convers
 docker compose up --build
 ```
 
-### GPU (NVIDIA only)
+### GPU (Vulkan — AMD, Intel, NVIDIA)
 ```bash
 docker compose -f docker-compose-gpu.yaml up --build
 ```
+
+This passes `/dev/dri` into the container so `whisper-cli` can use your GPU via Vulkan. Without it, the binary falls back to CPU automatically. Your user may need to be in the `video` or `render` group — check which group owns `/dev/dri/renderD128` with `ls -la /dev/dri`.
 
 The backend starts on **http://localhost:8000**. On the first run, `docker-entrypoint.sh` automatically downloads the whisper model (~470 MB for `small.en`) to `./.cache/whisper-models/` if it isn't already cached.
 
@@ -70,10 +72,10 @@ The backend uses **whisper-cli** from [whisper.cpp](https://github.com/ggml-org/
 
 - **Fast**: Optimized C++ implementation
 - **Lightweight**: No Python or ML framework dependencies
-- **GPU-ready**: The GPU Docker image uses a CUDA-compiled binary
+- **GPU-ready**: Uses a Vulkan-compiled binary that accelerates inference on AMD, Intel, or NVIDIA GPUs when `/dev/dri` is available, and falls back to CPU silently otherwise
 - **Self-contained**: Binary is baked into the Docker image at build time
 
-The binary and `ffmpeg` are copied from `ghcr.io/ggml-org/whisper.cpp:main` during the Docker build. No separate whisper service or network calls.
+Both compose files use `ghcr.io/ggml-org/whisper.cpp:main-vulkan`. The GPU compose file simply passes `/dev/dri` through to the container to enable GPU access. No separate whisper service or network calls.
 
 ## Configuration
 

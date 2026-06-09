@@ -4,22 +4,19 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        # CUDA-enabled whisper-cli binary
-        WHISPER_IMAGE: ghcr.io/ggml-org/whisper.cpp:main-cuda
+        # Vulkan-enabled whisper-cli binary (supports AMD, Intel, and NVIDIA via Vulkan)
+        WHISPER_IMAGE: ghcr.io/ggml-org/whisper.cpp:main-vulkan
     container_name: vox-server
     restart: always
     ports:
       - 8000:8000
     volumes:
       - ./.cache/whisper-models:/models
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
     environment:
       - BACKEND_PORT=8000
       - FFMPEG_PATH=ffmpeg
       - WHISPER_MODEL=/models/ggml-small.en.bin
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]

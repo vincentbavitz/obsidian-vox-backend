@@ -1,7 +1,7 @@
 # Use the whisper.cpp image as the base so whisper-cli and all its shared
 # libraries (libwhisper.so, etc.) are already present and correctly linked.
 # ffmpeg is also included in this image.
-ARG WHISPER_IMAGE=ghcr.io/ggml-org/whisper.cpp:main
+ARG WHISPER_IMAGE=ghcr.io/ggml-org/whisper.cpp:main-vulkan
 FROM ${WHISPER_IMAGE}
 
 # Install curl (for model download in entrypoint) and Node.js (for Bun installer)
