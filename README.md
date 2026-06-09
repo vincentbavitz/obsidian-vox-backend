@@ -175,12 +175,12 @@ docker compose up
 
 ### Running as a systemd service
 
-A sample unit file is at `./systemd/obsidian-smart-transcription.service`. Install it with:
+A sample unit file is at `./systemd/obsidian-vox.service`. Install it with:
 
 ```bash
-cp ./systemd/obsidian-smart-transcription.service /etc/systemd/system/
+cp ./systemd/obsidian-vox.service /etc/systemd/system/
 # Edit WorkingDirectory inside the file to match your path
 systemctl daemon-reload
-systemctl enable obsidian-smart-transcription
-systemctl start obsidian-smart-transcription
+systemctl enable obsidian-vox
+systemctl start obsidian-vox
 ```
