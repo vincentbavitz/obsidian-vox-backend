@@ -1,0 +1,25 @@
+services:
+  vox-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # CUDA-enabled whisper-cli binary
+        WHISPER_IMAGE: ghcr.io/ggml-org/whisper.cpp:main-cuda
+    container_name: vox-server
+    restart: always
+    ports:
+      - 8000:8000
+    volumes:
+      - ./.cache/whisper-models:/models
+    environment:
+      - BACKEND_PORT=8000
+      - FFMPEG_PATH=ffmpeg
+      - WHISPER_MODEL=/models/ggml-small.en.bin
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

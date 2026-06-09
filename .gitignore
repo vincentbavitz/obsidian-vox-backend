@@ -1,0 +1,9 @@
+cache
+.ffmpeg
+.cache
+.env
+.ssl
+CLAUDE.md
+
+node_modules
+data

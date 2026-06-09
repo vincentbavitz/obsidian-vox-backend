@@ -1,0 +1,15 @@
+services:
+  vox-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vox-server
+    restart: always
+    ports:
+      - 8000:8000
+    volumes:
+      - ./.cache/whisper-models:/models
+    environment:
+      - BACKEND_PORT=8000
+      - FFMPEG_PATH=ffmpeg
+      - WHISPER_MODEL=/models/ggml-small.en.bin

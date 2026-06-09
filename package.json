@@ -1,0 +1,31 @@
+{
+  "name": "obsidian-voice-transcription",
+  "description": "Takes audio-note files from a local directory and transcribes them into text, while extracting metadata and tag information. The transcribed text is then placed into Obsidian with its accompanying metadata (frontmatter) and tags.",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "bun --hot run ./src/server.ts",
+    "start": "bun ./src/server.ts",
+    "start:docker": "export USING_DOCKER=1 && bun ./src/server.ts",
+    "setup": "mkdir -p .ffmpeg && cd .ffmpeg && wget https://github.com/mifi/ffmpeg-builds/releases/download/5.1.2/linux-x64-v5.1.1.tar.xz -O ffmpeg-ffprobe.xz && tar -xv --strip-components=1 -f ffmpeg-ffprobe.xz ffmpeg-5.1.1-amd64-static/ffmpeg ffmpeg-5.1.1-amd64-static/ffprobe"
+  },
+  "author": "vincentbavtiz",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.5.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "fluent-ffmpeg": "^2.1.2",
+    "formidable": "^3.5.1",
+    "typescript": "^4.9.4"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.17",
+    "@types/fluent-ffmpeg": "^2.1.20",
+    "@types/formidable": "^3.4.3",
+    "@types/node": "^20.2.4",
+    "bun-types": "^1.0.3",
+    "ts-node": "^10.9.1"
+  }
+}
