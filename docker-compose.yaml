@@ -7,21 +7,48 @@ services:
       - "11434:11434"
     volumes:
       - ./.cache/ollama:/root/.ollama
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
     environment:
       - OLLAMA_MODEL=gemma4:e4b
+      - OLLAMA_IGPU_ENABLE=1
+      # Disable TUI in Ollama
+      - NO_COLOR=1
+      # Set OLLAMA_VULKAN=0 to disable Vulkan
+      # Set GGML_VK_VISIBLE_DEVICES=<ids> to select specific Vulkan devices
     entrypoint: ["/bin/sh", "-c"]
-    command: "ollama serve & sleep 5 && ollama pull ${OLLAMA_MODEL:-gemma4:e4b}; wait"
+    # Serve Ollama and pull the model if it doesn't already exist locally.
+    command: |
+      "ollama serve &
+      until ollama list >/dev/null 2>&1; do sleep 1; done
+      if ! ollama list | grep -q '${OLLAMA_MODEL:-gemma4:e4b}'; then
+        echo 'Model ${OLLAMA_MODEL:-gemma4:e4b} not found. Downloading...'
+        ollama pull ${OLLAMA_MODEL:-gemma4:e4b}
+      else
+        echo 'Model ${OLLAMA_MODEL:-gemma4:e4b} already exists. Skipping download.'
+      fi
+      wait"
 
   vox-server:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        # Vulkan-enabled whisper-cli binary (supports AMD, Intel, and NVIDIA via Vulkan)
+        WHISPER_IMAGE: ghcr.io/ggml-org/whisper.cpp:main-vulkan
     container_name: vox-server
     restart: always
     ports:
       - 8000:8000
     volumes:
       - ./.cache/whisper-models:/models
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
     depends_on:
       - ollama
     environment:

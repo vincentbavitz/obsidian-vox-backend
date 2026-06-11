@@ -4,14 +4,9 @@ A minimal Express.js server that provides audio transcription and format convers
 
 ## Quick Start
 
-### CPU (recommended for most users)
+### GPU Support (Vulkan — AMD, Intel, NVIDIA)
 ```bash
-docker compose up --build
-```
-
-### GPU (Vulkan — AMD, Intel, NVIDIA)
-```bash
-docker compose -f docker-compose-gpu.yaml up --build
+docker compose -f docker-compose.yaml up --build
 ```
 
 This passes `/dev/dri` into the container so `whisper-cli` can use your GPU via Vulkan. Without it, the binary falls back to CPU automatically. Your user may need to be in the `video` or `render` group — check which group owns `/dev/dri/renderD128` with `ls -la /dev/dri`.
