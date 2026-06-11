@@ -1,4 +1,17 @@
 services:
+  ollama:
+    image: ollama/ollama
+    container_name: vox-ollama
+    restart: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./.cache/ollama:/root/.ollama
+    environment:
+      - OLLAMA_MODEL=gemma4:e4b
+    entrypoint: ["/bin/sh", "-c"]
+    command: "ollama serve & sleep 5 && ollama pull ${OLLAMA_MODEL:-gemma4:e4b}; wait"
+
   vox-server:
     build:
       context: .
@@ -9,7 +22,11 @@ services:
       - 8000:8000
     volumes:
       - ./.cache/whisper-models:/models
+    depends_on:
+      - ollama
     environment:
       - BACKEND_PORT=8000
       - FFMPEG_PATH=ffmpeg
       - WHISPER_MODEL=/models/ggml-small.en.bin
+      - OLLAMA_URL=http://ollama:11434
+      - OLLAMA_MODEL=gemma4:e4b

@@ -20,4 +20,5 @@ export type TranscriptionResponse = {
 export enum Routes {
   TRANSCRIBE = "/transcribe",
   CONVERT = "/convert/audio",
+  SUMMARIZE = "/summarize",
 }

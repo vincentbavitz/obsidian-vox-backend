@@ -1,3 +1,4 @@
+import axios from "axios";
 import cors from "cors";
 import type { Request, Response } from "express";
 import express from "express";
@@ -7,10 +8,13 @@ import os from "os";
 import path from "path";
 import {
   MAX_FILE_SIZE,
+  OLLAMA_MODEL,
+  OLLAMA_URL,
   QUERY_PARAM_FILENAME,
   QUERY_PARAM_FORMAT,
 } from "./constants";
 import validateRequest from "./middleware/validate-request";
+import validateRequestJson from "./middleware/validate-request-json";
 
 const app = express();
 const PORT = parseInt(process.env.BACKEND_PORT || "8000", 10);
@@ -319,6 +323,65 @@ app.post(
   },
 );
 
+/**
+ * Summarization endpoint
+ * POST /summarize
+ * Body: application/json — { text: string, prompt?: string }
+ * Headers: obsidian-vault-id (required), obsidian-vox-api-key (optional)
+ * Returns: { summary: string }
+ */
+app.post(
+  "/summarize",
+  validateRequestJson,
+  async (req: Request, res: Response) => {
+    try {
+      const vaultId = req.vaultId;
+
+      let body: { text?: string; prompt?: string };
+      try {
+        body = JSON.parse((req.body as Buffer).toString("utf-8"));
+      } catch {
+        return res.status(400).json({ error: "Invalid JSON body." });
+      }
+
+      const { text, prompt } = body;
+
+      if (typeof text !== "string" || text.trim() === "") {
+        return res.status(400).json({
+          error: "Missing or empty 'text' field in request body.",
+        });
+      }
+
+      const ollamaPrompt =
+        typeof prompt === "string" && prompt.trim() !== ""
+          ? `${prompt.trim()}\n\n${text.trim()}`
+          : `Please summarize the following transcription concisely using Markdown syntax:\n\n${text.trim()}`;
+
+      console.log(
+        `[SUMMARIZE] Vault ${vaultId}: ${text.length} chars → ${OLLAMA_MODEL}`,
+      );
+
+      const response = await axios.post(
+        `${OLLAMA_URL}/api/generate`,
+        { model: OLLAMA_MODEL, prompt: ollamaPrompt, stream: false },
+        { headers: { "Content-Type": "application/json" } },
+      );
+
+      const summary: string = response.data?.response ?? "";
+
+      console.log(`[SUMMARIZE] Success for vault ${vaultId}`);
+
+      return res.status(200).json({ summary: summary.trim() });
+    } catch (error) {
+      console.error("[SUMMARIZE] Error:", error);
+      return res.status(500).json({
+        error: "Summarization failed",
+        details: error instanceof Error ? error.message : String(error),
+      });
+    }
+  },
+);
+
 // ============================================================================
 // ERROR HANDLING & SERVER STARTUP
 // ============================================================================
@@ -331,6 +394,7 @@ app.use((req, res) => {
     availableEndpoints: {
       "POST /transcribe": "Transcribe audio to text",
       "POST /convert/audio": "Convert audio format",
+      "POST /summarize": "Summarize transcription text via Ollama",
       "GET /health": "Health check",
     },
   });
@@ -342,12 +406,16 @@ app.listen(PORT, () => {
   console.log(`  whisper-cli: ${WHISPER_CLI}`);
   console.log(`  model:       ${WHISPER_MODEL}`);
   console.log(`  ffmpeg:      ${FFMPEG_PATH}`);
+  console.log(`  ollama:      ${OLLAMA_URL} (model: ${OLLAMA_MODEL})`);
   console.log(`\n  Endpoints:`);
   console.log(
     `    POST /transcribe?filename={filename}               - Transcribe audio to text`,
   );
   console.log(
     `    POST /convert/audio?format={format}&filename={fn} - Convert audio format`,
+  );
+  console.log(
+    `    POST /summarize                                    - Summarize text via Ollama`,
   );
   console.log(
     `    GET  /health                                       - Health check`,

@@ -10,3 +10,7 @@ export const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 MB
 
 // Server configuration
 export const PORT = parseInt(process.env.BACKEND_PORT || "8000", 10);
+
+// Ollama configuration
+export const OLLAMA_URL = process.env.OLLAMA_URL ?? "http://localhost:11434";
+export const OLLAMA_MODEL = process.env.OLLAMA_MODEL ?? "gemma4:e4b";
